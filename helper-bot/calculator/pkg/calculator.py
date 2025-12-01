@@ -1,4 +1,5 @@
 # calculator.py
+import re
 
 class Calculator:
     def __init__(self):
@@ -18,7 +19,8 @@ class Calculator:
     def evaluate(self, expression):
         if not expression or expression.isspace():
             return None
-        tokens = expression.strip().split()
+        tokens = re.findall(r"(\d+\.?\d*)|([+\-*/()])", expression)
+        tokens = [token[0] if token[0] else token[1] for token in tokens if token[0] or token[1]]
         return self._evaluate_infix(tokens)
 
     def _evaluate_infix(self, tokens):
@@ -34,6 +36,12 @@ class Calculator:
                 ):
                     self._apply_operator(operators, values)
                 operators.append(token)
+            elif token == '(':
+                operators.append(token)
+            elif token == ')':
+                while operators and operators[-1] != '(':
+                    self._apply_operator(operators, values)
+                operators.pop()  # Remove the '('
             else:
                 try:
                     values.append(float(token))
